@@ -1,7 +1,6 @@
 package memoic
 
 import (
-	"encoding/json"
 	"memoic/pkg/memoize"
 	"reflect"
 	"strings"
@@ -59,9 +58,9 @@ func (stack *Stack) recursiveInterpolate(sector Sector) {
 				}
 				var result string
 				if directive.As != nil {
-					as := *directive.As
-					if strings.EqualFold(as, "json") {
-						bytes, err := json.Marshal(item)
+					as := strings.ToLower(*directive.As)
+					if marshal, ok := marshalers[as]; ok {
+						bytes, err := marshal(item)
 						if err != nil {
 							continue
 						}
