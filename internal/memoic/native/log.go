@@ -5,10 +5,11 @@ import (
 	"memoic/internal/memoic"
 )
 
-var _ = memoic.AddFunction("std.log", memoic.Function{
-	func(stack *memoic.Stack) (any, error) {
-		stack.Interpolate()
-		fmt.Println(stack.Parameters["message"])
-		return nil, nil
+var _ = memoic.AddFunction("log", memoic.Function{
+	{
+		Invoke: func(stack *memoic.Stack) (any, error) {
+			fmt.Println(*stack.RawValue())
+			return nil, nil
+		},
 	},
 })

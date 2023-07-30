@@ -1,6 +1,7 @@
 package native
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/go-resty/resty/v2"
 	"memoic/internal/memoic"
@@ -9,47 +10,56 @@ import (
 var client = resty.New()
 
 var _ = memoic.AddFunction("http.request", memoic.Function{
-	func(stack *memoic.Stack) (any, error) {
-		stack.Interpolate()
-
-		request := client.R()
-
-		if method, ok := stack.Parameters["method"]; ok {
-			method, ok := method.(string)
-			if !ok {
-				return nil, errors.New("method can only be a string")
+	{
+		Invoke: func(stack *memoic.Stack) (any, error) {
+			params, err := stack.MappedParameters()
+			if err != nil {
+				return nil, err
 			}
-			request.Method = method
-		} else {
-			return nil, errors.New("cannot find the method to send http request")
-		}
-
-		if link, ok := stack.Parameters["link"]; ok {
-			link, ok := link.(string)
-			if !ok {
-				return nil, errors.New("link can only be a string")
+			request := client.R()
+			method, err := memoic.SectorGet[string](params, "method", true)
+			if err != nil {
+				return nil, err
 			}
-			request.URL = link
-		} else {
-			return nil, errors.New("cannot find the link to send http request")
-		}
+			request.Method = *method
 
-		if headers, ok := stack.Parameters["headers"]; ok {
-			headers, ok := headers.(map[string]string)
-			if !ok {
-				return nil, errors.New("headers can only be string:string")
+			link, err := memoic.SectorGet[string](params, "link", false)
+			if err != nil {
+				return nil, err
 			}
-			request.SetHeaders(headers)
-		}
+			if link != nil {
+				request.URL = *link
+			}
 
-		if body, ok := stack.Parameters["body"]; ok {
-			request.SetBody(body)
-		}
+			headers, err := memoic.SectorGet[map[string]any](params, "headers", false)
+			if err != nil {
+				return nil, err
+			}
+			if headers != nil {
+				mkay := make(map[string]string)
+				for key, value := range *headers {
+					if text, ok := value.(string); ok {
+						mkay[key] = text
+						continue
+					}
+					bytes, err := json.Marshal(value)
+					if err != nil {
+						return nil, errors.Join(errors.New("failed to jsonify header "+key), err)
+					}
+					mkay[key] = string(bytes)
+				}
+				request.SetHeaders(mkay)
+			}
 
-		response, err := request.Send()
-		if err != nil {
-			return nil, err
-		}
-		return string(response.Body()), nil
+			if body, ok := params["body"]; ok {
+				request.SetBody(body)
+			}
+
+			response, err := request.Send()
+			if err != nil {
+				return nil, err
+			}
+			return string(response.Body()), nil
+		},
 	},
 })

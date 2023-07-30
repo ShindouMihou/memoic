@@ -22,30 +22,12 @@ func main() {
 	if err != nil {
 		log.Panicln(err)
 	}
-	fn := memoic.Get("web." + root.Functions[0].Name)
-	// simulate the stack since we don't have the runtime complete yet.
-	// TODO: complete the runtime stack.
-	stack := memoic.Stack{
-		Sector: nil,
-		Parameters: memoic.Sector{
-			"method":  "GET",
-			"link":    "https://speed.cloudflare.com/meta",
-			"message": "{$local.result}",
-		},
-		Runtime: &memoic.Runtime{
-			Parameters: memoic.Sector{"key": "none"},
-			Heap:       memoic.Sector{},
-			Stacks:     []memoic.Stack{},
-			Result:     nil,
-		},
-	}
-	for _, fnc := range *fn {
-		res, err := fnc(&stack)
-		if err != nil {
-			log.Panicln(err)
-		}
-		if res != nil {
-			stack.Runtime.Heap["result"] = res
-		}
+	fn := memoic.Get("web.load")
+	runtime := memoic.NewRuntime(memoic.Sector{
+		"link": "https://jsonplaceholder.typicode.com/todos/1",
+	})
+	err = runtime.Load(fn)
+	if err != nil {
+		log.Panicln(err)
 	}
 }

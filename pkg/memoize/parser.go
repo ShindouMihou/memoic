@@ -35,9 +35,8 @@ type Metadata struct {
 }
 
 type FunctionDeclaration struct {
-	Name       string
-	Parameters map[string]string `json:"parameters"`
-	Pipeline   []*Pipe
+	Name     string
+	Pipeline []*Pipe
 }
 
 type declaration struct {

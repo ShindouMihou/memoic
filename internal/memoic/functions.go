@@ -9,7 +9,11 @@ import (
 
 var functions = make(map[string]Function)
 
-type Pipe func(stack *Stack) (any, error)
+type Pipe struct {
+	Invoke func(stack *Stack) (any, error)
+	Value  *any
+	As     *string
+}
 type Function []Pipe
 
 func AddFunction(key string, function Function) bool {
@@ -62,6 +66,19 @@ func imprintPipe(base []Function, pipes []*memoize.Pipe) []Function {
 			fmt.Println(key, " has no linked function.")
 			continue
 		}
+
+		cpy := make(Function, len(fn))
+		copy(cpy, fn)
+		fn = cpy
+
+		if child.As != nil {
+			fn[len(fn)-1].As = child.As
+		}
+
+		if child.Value != nil {
+			fn[len(fn)-1].Value = child.Value
+		}
+
 		base = append(base, fn)
 	}
 	return base
