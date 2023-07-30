@@ -14,7 +14,7 @@ import (
 type Runtime struct {
 	Parameters Sector
 	heap       Sector
-	Stacks     []Stack
+	stacks     []Stack
 	Result     *any
 }
 
@@ -72,7 +72,7 @@ func (stack *Stack) MappedParameters() (Sector, error) {
 
 func (runtime *Runtime) newStack() *Stack {
 	stack := Stack{Runtime: runtime}
-	runtime.Stacks = append(runtime.Stacks, stack)
+	runtime.stacks = append(runtime.stacks, stack)
 	return &stack
 }
 
@@ -129,17 +129,22 @@ func (stack *Stack) recursiveInterpolate(sector Sector) {
 	}
 }
 
+func (stack *Stack) Pull(directive memoize.Directive) (any, bool) {
+	mem := stack.Runtime.heap
+	if strings.EqualFold(directive.Director, memoize.GlobalDirector) {
+		mem = GlobalSector
+	}
+	if strings.EqualFold(directive.Director, memoize.ParamsDirector) {
+		mem = stack.Runtime.Parameters
+	}
+	item, ok := mem[directive.Keys[0]]
+	return item, ok
+}
+
 func (stack *Stack) textInterpolate(text string) string {
 	directives := memoize.InterpolatingDirectors(text)
 	for _, directive := range directives {
-		mem := stack.Runtime.heap
-		if strings.EqualFold(directive.Director, memoize.GlobalDirector) {
-			mem = GlobalSector
-		}
-		if strings.EqualFold(directive.Director, memoize.ParamsDirector) {
-			mem = stack.Runtime.Parameters
-		}
-		item, ok := mem[directive.Keys[0]]
+		item, ok := stack.Pull(directive.Directive)
 		if !ok {
 			continue
 		}

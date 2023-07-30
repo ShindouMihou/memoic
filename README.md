@@ -16,8 +16,7 @@ decoded into native Golang structures and then the pipelines are transformed int
 Pipelines can contain further more pipelines which takes priority over the parent pipeline, this can all be found in the 
 [`internal/memoic/functions.go`](internal/memoic/functions.go) code.
 
-So far, we have tested pipelines to work with the [`functions/examples/web/load.json`](functions/examples/web/load.json) under 
-a simulated runtime and stack, further work is needed to complete the runtime and stack implementation. Pipelines have their own 
-stack which contains their own memory space to store local variables with a runtime that contains a global memory space that is 
-accessible to all functions, this prevents functions from overriding one another or accidentally using one another's variables, though 
-further more work is needed to complete this section.
+Memoic's design enforces that functions do not have the ability to override each other, although there are situations 
+where pipelines can override one another and that situation is when the function's pipelines also returns an item to heap 
+with the same name as an existing one, but in general, all pipelines are not able to write to the heap nor can they write 
+to each other's heaps.

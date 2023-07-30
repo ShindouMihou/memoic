@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"memoic/internal/memoic"
@@ -30,4 +31,5 @@ func main() {
 	if err != nil {
 		log.Panicln(err)
 	}
+	fmt.Println(*runtime.Result)
 }

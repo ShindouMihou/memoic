@@ -30,7 +30,7 @@
         ]
       },
       {
-        "$fn().log": "{$local.result}"
+        "$fn().return": "$local.result"
       }
     ]
   }
