@@ -1,0 +1,26 @@
+{
+  "$metadata": {
+    "package": "user"
+  },
+  "load": {
+    "parameters": {
+      "key": "$types.string"
+    },
+    "pipeline": [
+      {
+        "$fn().http.request as result": {
+          "method": "GET",
+          "link": "https://speed.cloudflare.com/meta",
+          "headers": {
+            "Authorization": "None"
+          }
+        }
+      },
+      {
+        "$fn().std.log": {
+          "message": "{$local.result}"
+        }
+      }
+    ]
+  }
+}

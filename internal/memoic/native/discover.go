@@ -1,0 +1,3 @@
+package native
+
+func Discover() {}
