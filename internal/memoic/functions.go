@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+var reservedKeys = []string{
+	"return",
+	"assert",
+}
+
 var functions = make(map[string]Function)
 
 type Pipe struct {
@@ -17,6 +22,11 @@ type Pipe struct {
 type Function []Pipe
 
 func AddFunction(key string, function Function) bool {
+	for _, reserved := range reservedKeys {
+		if fn := Get(reserved); fn != nil && strings.EqualFold(key, reserved) {
+			panic(fmt.Errorf("%s is a reserved function key", reserved))
+		}
+	}
 	functions[key] = function
 	return true
 }
