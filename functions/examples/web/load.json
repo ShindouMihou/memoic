@@ -5,6 +5,14 @@
   "load": {
     "pipeline": [
       {
+        "$fn().assert": [
+          {
+            "value": "{$params.link}",
+            "type": "url"
+          }
+        ]
+      },
+      {
         "$fn().http.request as result": {
           "method": "GET",
           "link": "{$params.link}",
@@ -12,6 +20,14 @@
             "Authorization": "None"
           }
         }
+      },
+      {
+        "$fn().assert": [
+          {
+            "value": "{$local.result}",
+            "type": "json"
+          }
+        ]
       },
       {
         "$fn().log": "{$local.result}"

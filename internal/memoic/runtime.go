@@ -82,6 +82,31 @@ func (stack *Stack) interpolate() {
 	} else {
 		if text, ok := (*stack.RawValue()).(string); ok {
 			stack.replaceValue(stack.textInterpolate(text))
+		} else {
+			stack.typedInterpolate(stack.RawValue())
+		}
+	}
+}
+
+// typedInterpolate interpolates the value with its expected value.
+// this does not support string as value, refer to textInterpolate instead.
+func (stack *Stack) typedInterpolate(value *any) {
+	if sector, ok := (*value).(Sector); ok {
+		stack.recursiveInterpolate(sector)
+	}
+	if array, ok := (*value).([]string); ok {
+		for index, val := range array {
+			val := val
+			array[index] = stack.textInterpolate(val)
+		}
+	}
+	if array, ok := (*value).([]any); ok {
+		for index, val := range array {
+			val := val
+			if sector, ok := val.(map[string]any); ok {
+				stack.recursiveInterpolate(sector)
+				array[index] = sector
+			}
 		}
 	}
 }
@@ -92,12 +117,15 @@ func (stack *Stack) replaceValue(value any) {
 
 func (stack *Stack) recursiveInterpolate(sector Sector) {
 	for key, value := range sector {
+		value := value
+		// control for string interpolation has to be inlined.
+		// since `typedInterpolate` needs something directly modifiable.
 		if text, ok := value.(string); ok {
-			sector[key] = stack.textInterpolate(text)
+			value = stack.textInterpolate(text)
+		} else {
+			stack.typedInterpolate(&value)
 		}
-		if sector, ok := value.(Sector); ok {
-			stack.recursiveInterpolate(sector)
-		}
+		sector[key] = value
 	}
 }
 
