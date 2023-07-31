@@ -1,16 +1,18 @@
 package memoic
 
 import (
-	"encoding/json"
+	"fmt"
+	"github.com/bytedance/sonic"
 	"memoic/pkg/memoize"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
 type marshaler func(v any) ([]byte, error)
 
 var marshalers = map[string]marshaler{
-	"json": json.Marshal,
+	"json": sonic.Marshal,
 }
 
 func (stack *Stack) interpolate() {
@@ -69,11 +71,6 @@ func (stack *Stack) textInterpolate(text string) string {
 		if !ok {
 			continue
 		}
-		if len(directive.Keys) > 1 {
-			for _, key := range directive.Keys[1:] {
-				item = reflect.ValueOf(item).FieldByName(key).Interface()
-			}
-		}
 		var result string
 		if directive.As != nil {
 			as := strings.ToLower(*directive.As)
@@ -86,7 +83,25 @@ func (stack *Stack) textInterpolate(text string) string {
 			}
 		}
 		if result == "" {
-			result = reflect.ValueOf(item).String()
+			value := reflect.ValueOf(item)
+			switch value.Kind() {
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				result = strconv.FormatInt(value.Int(), 10)
+			case reflect.String:
+				result = value.String()
+			case reflect.Bool:
+				result = strconv.FormatBool(value.Bool())
+			case reflect.Float32, reflect.Float64:
+				result = fmt.Sprintf("%f", value.Float())
+			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				result = strconv.FormatUint(value.Uint(), 10)
+			default:
+				bytes, err := sonic.Marshal(item)
+				if err != nil {
+					continue
+				}
+				result = string(bytes)
+			}
 		}
 		text = strings.ReplaceAll(text, directive.Source, result)
 	}

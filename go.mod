@@ -3,7 +3,14 @@ module memoic
 go 1.20
 
 require (
-	github.com/go-resty/resty/v2 v2.7.0 // indirect
-	github.com/panjf2000/ants v1.3.0 // indirect
-	golang.org/x/net v0.0.0-20211029224645-99673261e6eb // indirect
+	github.com/bytedance/sonic v1.9.2
+	github.com/go-resty/resty/v2 v2.7.0
+)
+
+require (
+	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
+	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
+	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
+	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
+	golang.org/x/net v0.0.0-20211030010937-7b24c0a3601d // indirect
 )

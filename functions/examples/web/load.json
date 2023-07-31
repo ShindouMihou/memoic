@@ -30,6 +30,9 @@
         ]
       },
       {
+        "$fn().json.parse as result": "{$local.result}"
+      },
+      {
         "$fn().return": "$local.result"
       }
     ]

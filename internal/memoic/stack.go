@@ -3,6 +3,8 @@ package memoic
 import (
 	"errors"
 	"memoic/pkg/memoize"
+	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -46,5 +48,42 @@ func (stack *Stack) Pull(directive memoize.Directive) (any, bool) {
 		mem = stack.Runtime.Parameters
 	}
 	item, ok := mem[directive.Keys[0]]
+	if len(directive.Keys) > 1 && ok {
+		for _, key := range directive.Keys[1:] {
+			reflection := reflect.ValueOf(item)
+			if !reflection.IsValid() || reflection.IsNil() {
+				return nil, true
+			}
+			kind := reflection.Kind()
+			if kind != reflect.Struct && !(kind == reflect.Array || kind == reflect.Slice) && kind != reflect.Map {
+				return nil, false
+			}
+			if kind == reflect.Array || kind == reflect.Slice {
+				index, err := strconv.Atoi(key)
+				if err != nil {
+					return nil, false
+				}
+				value := reflection.Index(index)
+				if !value.IsValid() || value.IsNil() {
+					return nil, false
+				}
+				item = value.Interface()
+				continue
+			}
+			if kind == reflect.Map {
+				value := reflection.MapIndex(reflect.ValueOf(key))
+				if !value.IsValid() || value.IsNil() {
+					return nil, false
+				}
+				item = value.Interface()
+				continue
+			}
+			value := reflection.FieldByName(key)
+			if !value.IsValid() || value.IsNil() {
+				return nil, false
+			}
+			item = value.Interface()
+		}
+	}
 	return item, ok
 }

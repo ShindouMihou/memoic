@@ -1,9 +1,9 @@
 package native
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/bytedance/sonic"
 	"memoic/internal/memoic"
 	"net/url"
 	"regexp"
@@ -29,7 +29,7 @@ func createTypeCheck(fn func(value string) error) typeCheck {
 var typeChecks = map[string]typeCheck{
 	"json": createTypeCheck(func(value string) error {
 		var t any
-		return json.Unmarshal([]byte(value), &t)
+		return sonic.Unmarshal([]byte(value), &t)
 	}),
 	"duration": createTypeCheck(func(value string) error {
 		_, err := time.ParseDuration(value)

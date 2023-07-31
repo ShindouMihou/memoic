@@ -2,6 +2,7 @@ package memoize
 
 import (
 	"encoding/json"
+	"github.com/bytedance/sonic"
 	"reflect"
 	"strings"
 )
@@ -133,19 +134,19 @@ func Directors(src string) []Directive {
 
 func Parse(src []byte) (*Root, error) {
 	table := make(map[string]json.RawMessage)
-	if err := json.Unmarshal(src, &table); err != nil {
+	if err := sonic.Unmarshal(src, &table); err != nil {
 		return nil, err
 	}
 	root := Root{}
 	for key, value := range table {
 		if key == "$metadata" {
-			if err := json.Unmarshal(value, &root.Metadata); err != nil {
+			if err := sonic.Unmarshal(value, &root.Metadata); err != nil {
 				return nil, err
 			}
 			continue
 		}
 		var function declaration
-		if err := json.Unmarshal(value, &function); err != nil {
+		if err := sonic.Unmarshal(value, &function); err != nil {
 			return nil, err
 		}
 		function.Name = key
