@@ -19,7 +19,7 @@ func main() {
 		log.Panicln(err)
 	}
 	native.Discover()
-	err = memoic.ImprintFn(root)
+	err = memoic.LoadFunctions(root)
 	if err != nil {
 		log.Panicln(err)
 	}

@@ -17,13 +17,13 @@ var _ = memoic.AddFunction("http.request", memoic.Function{
 				return nil, err
 			}
 			request := client.R()
-			method, err := memoic.SectorGet[string](params, "method", true)
+			method, err := memoic.GetFrom[string](params, "method", true)
 			if err != nil {
 				return nil, err
 			}
 			request.Method = *method
 
-			link, err := memoic.SectorGet[string](params, "link", false)
+			link, err := memoic.GetFrom[string](params, "link", false)
 			if err != nil {
 				return nil, err
 			}
@@ -31,7 +31,7 @@ var _ = memoic.AddFunction("http.request", memoic.Function{
 				request.URL = *link
 			}
 
-			headers, err := memoic.SectorGet[map[string]any](params, "headers", false)
+			headers, err := memoic.GetFrom[map[string]any](params, "headers", false)
 			if err != nil {
 				return nil, err
 			}

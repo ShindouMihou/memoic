@@ -38,7 +38,7 @@ func Get(key string) *Function {
 	return nil
 }
 
-func ImprintFn(root *memoize.Root) error {
+func LoadFunctions(root *memoize.Root) error {
 	pkg := root.Metadata.Package
 	if pkg == "" {
 		return errors.New("package cannot be empty")
@@ -47,7 +47,7 @@ func ImprintFn(root *memoize.Root) error {
 		declaration := declaration
 
 		var fn []Function
-		fn = imprintPipe(fn, declaration.Pipeline)
+		fn = linkPipes(fn, declaration.Pipeline)
 
 		// flatten the function into one level
 		var fnc Function
@@ -61,10 +61,10 @@ func ImprintFn(root *memoize.Root) error {
 	return nil
 }
 
-func imprintPipe(base []Function, pipes []*memoize.Pipe) []Function {
+func linkPipes(base []Function, pipes []*memoize.Pipe) []Function {
 	for _, child := range pipes {
 		if len(child.Pipes) > 0 {
-			base = imprintPipe(base, child.Pipes)
+			base = linkPipes(base, child.Pipes)
 		}
 		if !strings.EqualFold(child.Director, memoize.FunctionDirector) {
 			fmt.Println(child.Keys, " is not a function pipeline.")
